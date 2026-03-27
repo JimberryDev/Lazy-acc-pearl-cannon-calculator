@@ -31,6 +31,9 @@ WINDOW_MARGIN_Y = 20
 PLACEHOLDER_COLOR = "gray"
 NORMAL_TEXT_COLOR = "black"
 
+WINDOW_TITLE = "Lazy Acceleration Calculator By JimberryDev"
+
+
 
 def get_app_dir() -> Path:
     if getattr(sys, "frozen", False):
@@ -425,7 +428,7 @@ def update_saved_state(
 def main() -> None:
     """Create and run the GUI application."""
     root = tk.Tk()
-    root.title("Coordinate Calculator")
+    root.title(WINDOW_TITLE)
     if ICON_FILE.exists():
         root.iconbitmap(str(ICON_FILE))
 
