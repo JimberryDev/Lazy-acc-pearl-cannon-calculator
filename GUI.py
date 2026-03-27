@@ -1,4 +1,6 @@
 import json
+import sys
+from pathlib import Path
 import tkinter as tk
 from tkinter import filedialog
 from collections.abc import Callable
@@ -27,7 +29,13 @@ WINDOW_MARGIN_Y = 20
 
 PLACEHOLDER_COLOR = "gray"
 NORMAL_TEXT_COLOR = "black"
-SETTINGS_FILE = Path("lazy_acc_cannon_gui_state.json")
+
+def get_app_dir() -> Path:
+    if getattr(sys, "frozen", False):
+        return Path(sys.executable).resolve().parent
+    return Path(__file__).resolve().parent
+
+SETTINGS_FILE = get_app_dir() / "lazy_acc_cannon_gui_state.json"
 
 
 def only_int(proposed_value: str) -> bool:

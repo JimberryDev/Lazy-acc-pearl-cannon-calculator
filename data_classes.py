@@ -1,4 +1,4 @@
-from dataclasses import asdict, dataclass
+from dataclasses import dataclass
 import tkinter as tk
 
 CoordinateEntries = tuple[tk.Entry, tk.Entry, tk.Entry]

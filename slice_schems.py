@@ -1,13 +1,21 @@
 import os
 import sys
+from pathlib import Path
 from litemapy import Schematic, BlockState, Region
 from cannon_calc import calculate_necessary_tnts, tnt_to_binary
 from data_classes import SchematicTarget, Coordinates
 
-DATA_SLICE = "src/Data slice.litematic"
-DECODER_SLICE = "src/Decoder slice.litematic"
-REPEATER = "src/Repeater.litematic"
-OUT_FOLDER = "out"
+
+BASE_DIR = Path(__file__).resolve().parent
+SRC_DIR = BASE_DIR / "src"
+
+APP_DIR = Path(sys.executable).resolve().parent if getattr(sys, "frozen", False) else Path(__file__).resolve().parent
+OUT_FOLDER = APP_DIR / "out"
+
+DATA_SLICE = SRC_DIR / "Data slice.litematic"
+DECODER_SLICE = SRC_DIR / "Decoder slice.litematic"
+REPEATER = SRC_DIR / "Repeater.litematic"
+
 AUTHOR = "JimberryDev"
 MAX_SCHEMATICS = 64
 
