@@ -1,15 +1,21 @@
 # Lazy Acc Cannon with GUI
-The Lazy Acc Cannon by JimberryDev is a cannon for Minecraft Java 1.21.11+ that allows you to travel in a few minutes to anywhere in your world within a range of ~500 thousand blocks in the nether, or ~4 million blocks in the overworld; with a max error of ~15 blocks (if you build it at y128 on the roof). This works by accelerating an enderpearl using tnt in a lazy loaded chunk, what is known as "lazy acceleration". The amount of tnt for each axis, as well as the direction of is stored in a Read-Only memory (ROM).
+The Lazy Acc Cannon is a Minecraft Java 1.21.11+ cannon that allows fast travel across extremely large distances.
 
-It comes with a small desktop tool to generate `.litematic` schematics so you can input locations into the ROM. Just open the .exe, input the cannon origin, the targets' names and coordinates, and click on "Make Schematic". It will ask you where you want to save the generated schematic and where.
+- ~500,000 blocks in the Nether
+- ~4,000,000 blocks in the Overworld
+- ~15 block max error (when built at Y=128)
 
-If you click on the "Overworld coords" checkbox, it will asume the coordinates you input are on the overworld side, and will divide by 8 the xz coordinates to get the nether respective coordinates before calculating.
+This works by accelerating an enderpearl using tnt in a lazy loaded chunk, what is known as "lazy acceleration". The amount of tnt for each axis, as well as the direction of is stored in a Read-Only memory (ROM).
+
+It comes with a small desktop tool to generate `.litematic` schematics so you can input locations into the ROM. Just open the .exe, input the cannon origin, the targets' names and coordinates, and click on "Make Schematic". It will ask you where you want to save the generated schematic and under what name.
+
+If you click on the "Overworld coords" checkbox, it will assume the coordinates you input are on the overworld side, and will divide the X and Z coordinates by 8 to get the nether respective coordinates before calculating.
 
 ---
 ## Screenshots
 
 ![Icon](app.ico)
-![Gui](/img/gui.png)
+![Gui](img/gui.png)
 
 ---
 
@@ -17,7 +23,7 @@ If you click on the "Overworld coords" checkbox, it will asume the coordinates y
 
 Watch how to use the cannon and tool here:
 
-[This link will be updated when I upload one in my channel](https://www.youtube.com/@JimberryDev)
+[Tutorial coming soon on my youtube channel](https://www.youtube.com/@JimberryDev)
 
 ---
 
@@ -41,7 +47,7 @@ Download the latest release from:
 
 - [Releases](https://github.com/JimberryDev/Lazy-acc-pearl-cannon-calculator/releases)
 
-Then Run `LazyAccCannon.exe`
+Then run `LazyAccCannonCalc.exe`
 
 ---
 
@@ -61,6 +67,13 @@ Run:
 ```bash
 python gui.py
 ```
+
+---
+##  Build the cannon
+
+First build the nether side. When doing this, make sure that it is chunk aligned. The trapdoors ontop of lava should be in 4 different chunks. DO NOT ROTATE NOR MIRROR. Then take the schematic origin, multiply the X and Z coordinates by 8 and put the overworld side there. It should connect automatically, but just in case it doesn't, start by building the portals and checkin that it all connects. The entry portal from the nether should lead you to the entry portal on the nether, but sadly the overworld portal brings you to another one in the nether. And the chunk loaders should link to each other.
+
+Make sure to build it in an area where it is improbable someone will load the cannon on the nether side while you use it.
 
 ---
 
@@ -102,7 +115,7 @@ GUI feedback:
 ## How to use the schematics
 
 - Put the new schematic at the end of your ROM and build it.
-- Add the new places to the lecterns on the overworld, starting on the right-most one
+- Add the new places to the lecterns on the overworld, starting on the right-most lectern.
 
 ## Saved State
 
@@ -203,7 +216,7 @@ Delete `build` if you want to.
 
 ## Known Issues
 
-- No known issue yet
+- No known issues yet
 
 ---
 
