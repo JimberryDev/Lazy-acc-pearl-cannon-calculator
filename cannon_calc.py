@@ -224,7 +224,7 @@ def tnt_to_binary(tnt_vector, dir_x, dir_z):
     # x_50 will be multiplied by 50
 
     if tnt_vector[0] > 3199 or tnt_vector[1] > 3199:
-        raise ValueError(f"You need too many tnts: {tnt_vector}. The memory of the cannon is not enough. The capacity of the memory is 3199.")
+        raise ValueError(f"You need too many tnts: {tnt_vector} for the memory of max 3199.")
 
     # As a constraint of the cannon, at least some direction signal has to be sent.
     # If a TNT count is 0, force the corresponding direction bit to 1 by selecting

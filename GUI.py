@@ -11,10 +11,11 @@ from cannon_calc import target_to_binary
 
 
 # ---- UI constants (layout & sizing) ----
-ENTRY_WIDTH = 5
+ENTRY_MIN_WIDTH = 5
+ID_MIN_WIDTH = 5
 AXIS_LABEL_WIDTH = 2
 LEFT_LABEL_WIDTH = 15
-NAME_ENTRY_WIDTH = 18
+NAME_MIN_WIDTH = 18
 
 UI_SCALE = 1.8
 
@@ -38,6 +39,7 @@ def get_app_dir() -> Path:
 
 
 SETTINGS_FILE = get_app_dir() / "lazy_acc_cannon_gui_state.json"
+ICON_FILE = Path(__file__).resolve().parent / "app.ico"
 
 
 def only_int(proposed_value: str) -> bool:
@@ -101,6 +103,26 @@ def bind_ctrl_backspace(entry: tk.Entry) -> None:
     entry.bind("<Control-BackSpace>", on_ctrl_backspace)
 
 
+def update_entry_width(entry: tk.Entry, min_width: int) -> None:
+    """Keep an Entry at least min_width characters wide and expand if needed."""
+    content_length = len(entry.get())
+    placeholder_length = len(getattr(entry, "_placeholder_text", "")) if is_placeholder_active(entry) else 0
+    entry.config(width=max(min_width, content_length + 1, placeholder_length + 1))
+
+
+def enable_auto_expand(entry: tk.Entry, min_width: int) -> None:
+    """Enable automatic width growth for an Entry widget."""
+    entry._min_width = min_width  # type: ignore[attr-defined]
+
+    def on_change(_event=None) -> None:
+        update_entry_width(entry, min_width)
+
+    entry.bind("<KeyRelease>", on_change, add="+")
+    entry.bind("<FocusIn>", on_change, add="+")
+    entry.bind("<FocusOut>", on_change, add="+")
+    update_entry_width(entry, min_width)
+
+
 def add_placeholder(entry: tk.Entry, text: str) -> None:
     """Show gray placeholder text inside an Entry widget.
 
@@ -114,12 +136,16 @@ def add_placeholder(entry: tk.Entry, text: str) -> None:
             entry.insert(0, text)
             entry.config(fg=PLACEHOLDER_COLOR)
             entry._placeholder_active = True  # type: ignore[attr-defined]
+            if hasattr(entry, "_min_width"):
+                update_entry_width(entry, entry._min_width)  # type: ignore[attr-defined]
 
     def hide_placeholder() -> None:
         if is_placeholder_active(entry):
             entry.delete(0, tk.END)
             entry.config(fg=NORMAL_TEXT_COLOR)
             entry._placeholder_active = False  # type: ignore[attr-defined]
+            if hasattr(entry, "_min_width"):
+                update_entry_width(entry, entry._min_width)  # type: ignore[attr-defined]
 
     def on_focus_in(_event) -> None:
         hide_placeholder()
@@ -143,6 +169,8 @@ def set_entry_text(entry: tk.Entry, text: str) -> None:
     entry.delete(0, tk.END)
     entry.insert(0, text)
     entry._placeholder_active = False  # type: ignore[attr-defined]
+    if hasattr(entry, "_min_width"):
+        update_entry_width(entry, entry._min_width)  # type: ignore[attr-defined]
 
 
 def load_saved_state() -> SavedState | None:
@@ -169,16 +197,19 @@ def save_state(state: SavedState) -> None:
 
 def make_xyz_fields(parent: tk.Misc, vcmd: ValidatorCommand) -> CoordinateEntries:
     """Create x, y, z integer fields inside an existing horizontal container."""
-    x_entry = tk.Entry(parent, width=ENTRY_WIDTH, justify="right", validate="key", validatecommand=vcmd)
+    x_entry = tk.Entry(parent, width=ENTRY_MIN_WIDTH, justify="right", validate="key", validatecommand=vcmd)
     x_entry.pack(side="left")
+    enable_auto_expand(x_entry, ENTRY_MIN_WIDTH)
     tk.Label(parent, text="x", anchor="w", width=AXIS_LABEL_WIDTH).pack(side="left")
 
-    y_entry = tk.Entry(parent, width=ENTRY_WIDTH, justify="right", validate="key", validatecommand=vcmd)
+    y_entry = tk.Entry(parent, width=ENTRY_MIN_WIDTH, justify="right", validate="key", validatecommand=vcmd)
     y_entry.pack(side="left")
+    enable_auto_expand(y_entry, ENTRY_MIN_WIDTH)
     tk.Label(parent, text="y", anchor="w", width=AXIS_LABEL_WIDTH).pack(side="left")
 
-    z_entry = tk.Entry(parent, width=ENTRY_WIDTH, justify="right", validate="key", validatecommand=vcmd)
+    z_entry = tk.Entry(parent, width=ENTRY_MIN_WIDTH, justify="right", validate="key", validatecommand=vcmd)
     z_entry.pack(side="left")
+    enable_auto_expand(z_entry, ENTRY_MIN_WIDTH)
     tk.Label(parent, text="z", anchor="w", width=AXIS_LABEL_WIDTH).pack(side="left")
 
     return x_entry, y_entry, z_entry
@@ -222,8 +253,9 @@ def make_target_row(parent: tk.Misc, vcmd: ValidatorCommand) -> TargetRow:
 
     tk.Label(row, text="Name:").pack(side="left")
 
-    name_entry = tk.Entry(row, width=NAME_ENTRY_WIDTH)
+    name_entry = tk.Entry(row, width=NAME_MIN_WIDTH)
     name_entry.pack(side="left", padx=(0, AXIS_LABEL_WIDTH))
+    enable_auto_expand(name_entry, NAME_MIN_WIDTH)
     bind_ctrl_backspace(name_entry)
 
     tk.Label(row, text=":").pack(side="left", padx=(0, AXIS_LABEL_WIDTH))
@@ -394,6 +426,8 @@ def main() -> None:
     """Create and run the GUI application."""
     root = tk.Tk()
     root.title("Coordinate Calculator")
+    if ICON_FILE.exists():
+        root.iconbitmap(str(ICON_FILE))
 
     # Scale entire UI (fonts + widgets)
     root.tk.call("tk", "scaling", UI_SCALE)
@@ -437,8 +471,9 @@ def main() -> None:
 
     # Index
     tk.Label(origin_content_frame, text="Number of existing targets:", anchor="w").pack(side="left")
-    starting_id = tk.Entry(origin_content_frame, width=ENTRY_WIDTH, justify="right", validate="key", validatecommand=id_vcmd)
+    starting_id = tk.Entry(origin_content_frame, width=ID_MIN_WIDTH, justify="right", validate="key", validatecommand=id_vcmd)
     starting_id.pack(side="left")
+    enable_auto_expand(starting_id, ID_MIN_WIDTH)
 
     if saved_state is not None:
         add_placeholder(starting_id, str(saved_state.starting_id))
@@ -454,8 +489,8 @@ def main() -> None:
     target_rows_frame.pack(anchor="w", fill="x")
     target_rows: list[TargetRow] = []
 
-    output_label = tk.Label(text_frame, text="", anchor="w", justify="left")
-    output_label.pack(anchor="w")
+    output_label = tk.Label(text_frame, text="", anchor="w", justify="left", wraplength=1)
+    output_label.pack(anchor="w", fill="x")
 
     def resize_window_to_content() -> None:
         """Ensure the window is large enough for the current content, with margin.
@@ -478,6 +513,8 @@ def main() -> None:
             new_width = max(current_width, required_width)
             new_height = max(current_height, required_height)
             root.geometry(f"{new_width}x{new_height}")
+
+        output_label.config(wraplength=max(200, main_frame.winfo_width() - 2 * SECTION_PAD_X))
 
     def add_target_row() -> None:
         """Add one more target row below the targets header."""
@@ -530,6 +567,11 @@ def main() -> None:
 
     tk.Button(buttons_frame, text="Make schematic", command=on_make_schematic).pack(side="left", padx=(0, BUTTON_GAP_X))
     tk.Button(buttons_frame, text="Close", command=root.destroy).pack(side="left")
+
+    def on_root_configure(_event) -> None:
+        output_label.config(wraplength=max(200, main_frame.winfo_width() - 2 * SECTION_PAD_X))
+
+    root.bind("<Configure>", on_root_configure, add="+")
 
     add_target_row()
     resize_window_to_content()
