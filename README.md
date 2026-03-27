@@ -25,22 +25,16 @@ If you click on the "Overworld coords" checkbox, it will asume the coordinates y
 
 Download the latest release from:
 
-👉 [Releases](https://github.com/JimberryDev/Lazy-acc-pearl-cannon-calculator/releases)
+[Releases](https://github.com/JimberryDev/Lazy-acc-pearl-cannon-calculator/releases)
 
-Then:
-1. Extract (if zipped)
-2. Run `LazyAccCannon.exe`
+Then Run `LazyAccCannon.exe`
 
 ---
 
 ### Option 2 — Run from source
 
 **Requirements**
-- Python [VERSION]
-- Packages:
-  - `numpy`
-  - `litemapy`
-  - [other dependencies if any]
+- Python 3.13.16
 
 Install:
 
@@ -56,7 +50,7 @@ python gui.py
 
 ---
 
-## 🖥️ Usage
+##  Usage
 
 ### Inputs
 
@@ -64,7 +58,7 @@ python gui.py
   - Where the base cannon schematic is placed
 
 - **Number of existing schematics**
-  - Starting ID for new entries
+  - Starting ID for new entries. Here you have to input how many targets you already have in your cannon.
 
 - **Targets**
   - Name (optional)
@@ -80,9 +74,9 @@ python gui.py
 
 ---
 
-## 📤 Output
+## Output
 
-- A `.litematic` file containing decoder + data slices
+- A `.litematic` file containing decoder + data slices and repeaters whenever needed
 - Only **reachable** targets are included
 
 GUI feedback:
@@ -91,7 +85,12 @@ GUI feedback:
 
 ---
 
-## 💾 Saved State
+## How to use the schematics
+
+- Put the new schematic at the end of your ROM and build it.
+- Add the new places to the lecterns on the overworld, starting on the right-most one
+
+## Saved State
 
 The app stores a JSON file with:
 - last origin
@@ -107,13 +106,15 @@ Location:
 - Source run: next to Python files
 - Packaged exe: next to the executable
 
+You can delete this file without repercussions, but it won't remember the cannon's schematic origin.
+
 ---
 
-## 🧠 How it works (high level)
+## How it works (high level)
 
 1. Compute trajectory using Minecraft drag + gravity
-2. Convert velocity → TNT counts
-3. Encode TNT into binary layout
+2. Convert velocity to TNT counts using a change of base, where the motion each tnt would apply is used as a base vector.
+3. Encode TNT into the binary layout the cannon requires.
 4. Build regions (decoder + data)
 5. Merge into final schematic
 
@@ -137,7 +138,7 @@ Location:
 
 ---
 
-## 🛠️ Build (PyInstaller)
+## Build (PyInstaller)
 
 Create venv and install:
 
@@ -165,6 +166,8 @@ Output:
 ```text
 dist/LazyAccCannon.exe
 ```
+
+Delete `build` if you want to
 
 ---
 
