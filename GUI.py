@@ -5,9 +5,9 @@ import tkinter as tk
 from tkinter import filedialog
 from collections.abc import Callable
 from dataclasses import asdict
-from pathlib import Path
 from slice_schems import MAX_SCHEMATICS, rom_entries
 from data_classes import *
+from cannon_calc import target_to_binary
 
 
 # ---- UI constants (layout & sizing) ----
@@ -16,7 +16,7 @@ AXIS_LABEL_WIDTH = 2
 LEFT_LABEL_WIDTH = 15
 NAME_ENTRY_WIDTH = 18
 
-UI_SCALE = 1.6
+UI_SCALE = 1.8
 
 SECTION_PAD_X = 10
 SECTION_PAD_Y = 10
@@ -30,10 +30,12 @@ WINDOW_MARGIN_Y = 20
 PLACEHOLDER_COLOR = "gray"
 NORMAL_TEXT_COLOR = "black"
 
+
 def get_app_dir() -> Path:
     if getattr(sys, "frozen", False):
         return Path(sys.executable).resolve().parent
     return Path(__file__).resolve().parent
+
 
 SETTINGS_FILE = get_app_dir() / "lazy_acc_cannon_gui_state.json"
 
@@ -293,26 +295,99 @@ def make_schematics(
     targets: list[SchematicTarget],
     existing_targets_count: int,
     output_path: str,
-) -> None:
-    """Create the schematics for the current GUI inputs.
-
-    Parameters
-    ----------
-    litematica_origin:
-        Origin of the placed base schematic in the world.
-    targets:
-        All requested target rows from the GUI.
-    existing_targets_count:
-        Number of already existing schematics/IDs in the world.
-    output_path:
-        Destination .litematic file chosen by the user.
-
-    This function is intentionally left empty for now and is the place where
-    the actual schematic-generation code should go.
-    """
+) -> list[tuple[int, str]]:
+    """Create schematics and return a list of (row_index, reason) for failures."""
     name = Path(output_path).stem
-    schem = rom_entries(name=name, starting_id=existing_targets_count+1, cannon=litematica_origin, targets=targets)
-    schem.save(output_path)
+
+    encoded_targets: list[EncodedTarget] = []
+    failures: list[tuple[int, str]] = []
+
+    for idx, target in enumerate(targets):
+        try:
+            encoded_target = EncodedTarget(
+                target.name,
+                *target_to_binary(
+                    (litematica_origin.x, litematica_origin.y, litematica_origin.z),
+                    (target.x, target.y, target.z),
+                ),
+            )
+            encoded_targets.append(encoded_target)
+        except Exception as error:
+            failures.append((idx, str(error)))
+
+    # Only build/save if there is at least one valid target.
+    if encoded_targets:
+        schem = rom_entries(
+            name=name,
+            starting_id=existing_targets_count + 1,
+            encoded_targets=encoded_targets,
+        )
+        schem.save(output_path)
+
+    return failures
+
+
+def gather_gui_inputs(
+    origin_entries: CoordinateEntries,
+    starting_id_entry: tk.Entry,
+    target_rows: list[TargetRow],
+) -> tuple[Coordinates, list[SchematicTarget], int]:
+    """Read all current GUI values and convert them to plain data."""
+    origin_x, origin_y, origin_z = format_coordinates(origin_entries, allow_placeholder=True)
+    origin = Coordinates(x=origin_x, y=origin_y, z=origin_z)
+    targets = collect_targets(target_rows)
+    current_starting_id = get_int(starting_id_entry, allow_placeholder=True)
+    return origin, targets, current_starting_id
+
+
+def reset_target_row_styles(target_rows: list[TargetRow]) -> None:
+    """Reset the visual state of all target rows."""
+    for row in target_rows:
+        row.name_entry.config(bg="white")
+
+
+def mark_failed_target_rows(
+    target_rows: list[TargetRow],
+    failures: list[tuple[int, str]],
+) -> None:
+    """Highlight target rows that could not be encoded."""
+    for index, _reason in failures:
+        if 0 <= index < len(target_rows):
+            target_rows[index].name_entry.config(bg="#ffcccc")
+
+
+def build_output_lines(
+    targets: list[SchematicTarget],
+    failures: list[tuple[int, str]],
+) -> list[str]:
+    """Build the user-facing summary shown in the output label."""
+    failure_map = {index: reason for index, reason in failures}
+
+    lines: list[str] = []
+    for index, target in enumerate(targets):
+        if index in failure_map:
+            lines.append(f"{target.name}: NOT REACHABLE ({failure_map[index]})")
+        else:
+            lines.append(f"{target.name}: OK")
+
+    return lines
+
+
+def update_saved_state(
+    origin: Coordinates,
+    current_starting_id: int,
+    target_count: int,
+) -> SavedState:
+    """Persist the updated origin and starting ID and return the saved state."""
+    new_starting_id = current_starting_id + target_count
+    state = SavedState(
+        origin_x=origin.x,
+        origin_y=origin.y,
+        origin_z=origin.z,
+        starting_id=new_starting_id,
+    )
+    save_state(state)
+    return state
 
 
 def main() -> None:
@@ -419,7 +494,7 @@ def main() -> None:
         resize_window_to_content()
 
     def on_make_schematic() -> None:
-        """Preview the current values, choose an output path, and persist state."""
+        """Choose an output file, run the generation, and update the GUI."""
         output_path = filedialog.asksaveasfilename(
             parent=root,
             title="Save generated schematic as...",
@@ -429,29 +504,27 @@ def main() -> None:
         if not output_path:
             return
 
-        origin_xyz = format_coordinates(origin_entries, allow_placeholder=True)
-        origin = Coordinates(x=origin_xyz[0], y=origin_xyz[1], z=origin_xyz[2])
-        targets = collect_targets(target_rows)
-        current_starting_id = get_int(starting_id, allow_placeholder=True)
+        origin, targets, current_starting_id = gather_gui_inputs(
+            origin_entries,
+            starting_id,
+            target_rows,
+        )
 
-        make_schematics(
+        failures = make_schematics(
             litematica_origin=origin,
             targets=targets,
             existing_targets_count=current_starting_id,
             output_path=output_path,
         )
 
-        new_starting_id = current_starting_id + len(target_rows)
+        reset_target_row_styles(target_rows)
+        mark_failed_target_rows(target_rows, failures)
 
-        save_state(
-            SavedState(
-                origin_x=origin.x,
-                origin_y=origin.y,
-                origin_z=origin.z,
-                starting_id=new_starting_id,
-            )
-        )
-        set_entry_text(starting_id, str(new_starting_id))
+        lines = build_output_lines(targets, failures)
+        output_label.config(text="\n".join(lines))
+
+        saved_state = update_saved_state(origin, current_starting_id, len(target_rows))
+        set_entry_text(starting_id, str(saved_state.starting_id))
 
     make_targets_header_row(header_frame, add_target_row)
 

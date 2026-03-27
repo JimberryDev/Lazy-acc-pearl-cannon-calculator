@@ -2,8 +2,7 @@ import numpy as np
 import sys
 
 
-
-RELATIVE_LAUNCH_POINT = np.array([18.0,17.75,0.865])
+RELATIVE_LAUNCH_POINT = np.array([18.0, 17.75, 0.865])
 DRAG = 0.99  # Drag coefficient per tick.
 d = DRAG
 GRAVITY = 0.03  # Gravity per tick.
@@ -11,12 +10,12 @@ g = GRAVITY
 X, Y, Z = 0, 1, 2  # Indexes to improve readability when accessing np arrays
 # Base launch vectors for the four cardinal directions.
 DIRECTIONS = {
-    "north":   {"name": "north", "vector":      np.array([ 0.15889793171230157,0, -0.8773928676974515]), "bit": 1},
-    "south":   {"name": "south", "vector":      np.array([ 0.2577611051239664, 0, 0.8405252517166506 ]), "bit": 0},
-    "west":    {"name": "west", "vector":       np.array([-0.7990852942457304, 0,-0.3995426547435254 ]), "bit": 1},
-    "east":    {"name": "east", "vector":       np.array([ 0.8022091152196946, 0,-0.39323978471691357]), "bit": 0},
+    "north":   {"name": "north", "vector":      np.array([0.15889793171230157, 0, -0.8773928676974515]), "bit": 1},
+    "south":   {"name": "south", "vector":      np.array([0.2577611051239664, 0, 0.8405252517166506]), "bit": 0},
+    "west":    {"name": "west", "vector":       np.array([-0.7990852942457304, 0, -0.3995426547435254]), "bit": 1},
+    "east":    {"name": "east", "vector":       np.array([0.8022091152196946, 0, -0.39323978471691357]), "bit": 0},
     # "initial": {"name": "initial", "vector":    np.array([-0.2651525076935224, -0.45633449169280826,-0.21949711207872816])},
-    "initial": {"name": "initial", "vector":    np.array([0,0,0])},
+    "initial": {"name": "initial", "vector":    np.array([0, 0, 0])},
 }
 
 
@@ -32,6 +31,7 @@ def calculate_necessary_tnts(canon_origin, target_position):
     tnts, dir_x, dir_z, reached_v = v_to_tnts(v0)
 
     return tnts, dir_x, dir_z, t, reached_v
+
 
 def velocity_given_displacement(displacement, t):
     """
@@ -58,6 +58,7 @@ def velocity_given_displacement(displacement, t):
     """
     return displacement * (1 - d) / (d * (1 - d**t))
 
+
 def displacement_given_velocity(v, t):
     """
     Compute the displacement after t ticks given an initial horizontal velocity.
@@ -71,8 +72,10 @@ def displacement_given_velocity(v, t):
     """
     return v * d * (1 - d**t) / (1 - d)
 
+
 def cross2(a, b):
     return a[0] * b[1] - a[1] * b[0]
+
 
 def v_to_tnts(v):
     """
@@ -118,10 +121,10 @@ def v_to_tnts(v):
     h_v = v[[X, Z]]
 
     initial = DIRECTIONS["initial"]["vector"][[X, Z]]
-    east    = DIRECTIONS["east"]["vector"][[X, Z]]
-    south   = DIRECTIONS["south"]["vector"][[X, Z]]
-    west    = DIRECTIONS["west"]["vector"][[X, Z]]
-    north   = DIRECTIONS["north"]["vector"][[X, Z]]
+    east = DIRECTIONS["east"]["vector"][[X, Z]]
+    south = DIRECTIONS["south"]["vector"][[X, Z]]
+    west = DIRECTIONS["west"]["vector"][[X, Z]]
+    north = DIRECTIONS["north"]["vector"][[X, Z]]
 
     # Determine which direction vectors to use.
     # Specifically, we are trying to get between
@@ -153,15 +156,14 @@ def v_to_tnts(v):
         dir_z["vector"][[X, Z]],
     ))
 
-
     # Solve basis_matrix * coeffs = horizontal_velocity
     # to get the TNT amounts in this basis and then round
     raw_coeffs = np.linalg.solve(basis_matrix, h_v-initial)
     tnt_counts = np.rint(raw_coeffs).astype(int)
     reached_v = basis_matrix @ tnt_counts+initial
 
-   
     return tnt_counts, dir_x, dir_z, reached_v
+
 
 def ticks_until_fall(dy):
     # We want the smallest integer t such that y_at_tick(t) <= dy.
@@ -189,6 +191,7 @@ def ticks_until_fall(dy):
 
     return lo
 
+
 def y_at_tick(t):
     """
     Compute vertical displacement after t ticks for ThrowableProjectile motion.
@@ -211,16 +214,17 @@ def y_at_tick(t):
     v_0y = DIRECTIONS["initial"]["vector"][Y]
     return (v_0y + d * g / (1 - d)) * (d * (1 - d**t) / (1 - d)) - (d * g / (1 - d)) * t
 
+
 def tnt_to_binary(tnt_vector, dir_x, dir_z):
-    # The machine expects 
+    # The machine expects
     # (direction_bit & x_10 & 1_9 & x_50)
-    # where & represents concatenation, 
-    # x_10 will be multiplied by 10, 
+    # where & represents concatenation,
+    # x_10 will be multiplied by 10,
     # 1_9 is an amount between 1 and 9
     # x_50 will be multiplied by 50
 
     if tnt_vector[0] > 3199 or tnt_vector[1] > 3199:
-        print("You need too many tnts. The memory of the cannon is not enough. The capacity of the memory is 3199.")
+        raise ValueError(f"You need too many tnts: {tnt_vector}. The memory of the cannon is not enough. The capacity of the memory is 3199.")
 
     # As a constraint of the cannon, at least some direction signal has to be sent.
     # If a TNT count is 0, force the corresponding direction bit to 1 by selecting
@@ -230,17 +234,22 @@ def tnt_to_binary(tnt_vector, dir_x, dir_z):
     if tnt_vector[1] == 0:
         dir_z = DIRECTIONS["north"]
 
-    binary_x =  str(dir_x["bit"])
-    binary_x += " " + format((tnt_vector[0]%50//10), "03b")
-    binary_x += " " + format(tnt_vector[0]%10, "04b")[::-1]
+    binary_x = str(dir_x["bit"])
+    binary_x += " " + format((tnt_vector[0] % 50//10), "03b")
+    binary_x += " " + format(tnt_vector[0] % 10, "04b")[::-1]
     binary_x += " " + format(tnt_vector[0]//50, "06b")
 
-    binary_z =  str(dir_z["bit"])
-    binary_z += " " + format((tnt_vector[1]%50//10), "03b")
-    binary_z += " " + format(tnt_vector[1]%10, "04b")[::-1]
+    binary_z = str(dir_z["bit"])
+    binary_z += " " + format((tnt_vector[1] % 50//10), "03b")
+    binary_z += " " + format(tnt_vector[1] % 10, "04b")[::-1]
     binary_z += " " + format(tnt_vector[1]//50, "06b")
 
     return binary_x, binary_z
+
+
+def target_to_binary(cannon: tuple[int, int, int], target: tuple[int, int, int]):
+    tnts, dir_x, dir_z, _, _ = calculate_necessary_tnts(cannon, target)
+    return tnt_to_binary(tnts, dir_x, dir_z)
 
 
 if __name__ == "__main__":
@@ -249,7 +258,6 @@ if __name__ == "__main__":
         tnts, dir_x, dir_z, t, reached_v = calculate_necessary_tnts((canon_x, canon_y, canon_z), (target_x, target_y, target_z))
         b_x, b_z = tnt_to_binary(tnts, dir_x, dir_z)
 
-
         print("")
         print(f"Achieved velocity: {reached_v}")
         print(f"Only Z: {dir_z["vector"]*tnts[1]}")
@@ -257,7 +265,7 @@ if __name__ == "__main__":
         print(f"You'll arrive at {displacement_given_velocity(reached_v, t)+np.array((canon_x, canon_z))}")
 
         print(f"\nWe need")
-        print(f"{tnts[1]} tnts in the z direction.")    
+        print(f"{tnts[1]} tnts in the z direction.")
         print(f"{tnts[0]} tnts in the x direction and")
         print(f"For the directions {dir_x['name']} and {dir_z['name']}, respectively.")
         print(f"\nBinary string Z ( up ): {b_z}")
@@ -272,4 +280,3 @@ if __name__ == "__main__":
             "Usage: python script.py x0 y0 z0 xt yt zt\n"
             "Example: python script.py 0 64 0 10 70 -5\n"
         )
-

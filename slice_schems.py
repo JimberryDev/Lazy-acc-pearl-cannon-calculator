@@ -2,8 +2,8 @@ import os
 import sys
 from pathlib import Path
 from litemapy import Schematic, BlockState, Region
-from cannon_calc import calculate_necessary_tnts, tnt_to_binary
-from data_classes import SchematicTarget, Coordinates
+from cannon_calc import target_to_binary
+from data_classes import EncodedTarget
 
 
 BASE_DIR = Path(__file__).resolve().parent
@@ -30,12 +30,10 @@ def coords_to_data_region(cannon, target) -> Region:
     Returns:
         Region: A region with the bits that encode the target tnt to get to target.
     """
-    tnts, dir_x, dir_z, _, _ = calculate_necessary_tnts(cannon, target)
-    b_x, b_z = tnt_to_binary(tnts, dir_x, dir_z)
-    return bits_to_region(b_x, b_z)
+    return bits_to_region(*target_to_binary(cannon, target))
 
 
-def bits_to_region(b_x, b_z) -> Region:
+def bits_to_region(b_x: str, b_z: str) -> Region:
     """Make a region with the observers in place to encode the given bits.
 
     Args:
@@ -54,6 +52,8 @@ def bits_to_region(b_x, b_z) -> Region:
     # Assume first region
     region = next(iter(schem.regions.values()))
 
+    print(f"b_z is {b_z}")
+    print(f"b_x is {b_x}")
     for i, c in enumerate(b_z):
         if c == '1':
             region[i, -1, 0] = BlockState("minecraft:observer", facing="down")
@@ -138,21 +138,20 @@ def rom_slice(id: int, cannon, target) -> Region:
     return slice
 
 
-def rom_entries(name: str, starting_id: int, cannon: Coordinates, targets: list[SchematicTarget]):
+def rom_entries(name: str, starting_id: int, encoded_targets: list[EncodedTarget]) -> Schematic:
     """Create a schematic with everything you need to add targets to the lazy acc cannon.
     It includes slices for the decoder as well encoding the tnt. 
 
     Args:
         name (str): The name of the schematic
         starting_id (int): The number of the first target
-        cannon (Coordinates): The coordinates the schematic is placed at.
-        targets (list[SchematicTarget]): A list with all of the targets to be added.
+        encoded_targets (list[EncodedTarget]): A list with all of the targets to be added.
 
     Raises:
-        ValueError: _description_
+        ValueError: starting_id must be more than 0 and less than MAX_SCHEMATICS
 
     Returns:
-        _type_: _description_
+        Schematic: A schematic with the decoder and encoder for your targets
     """
 
     if not (0 < starting_id < MAX_SCHEMATICS):
@@ -163,22 +162,22 @@ def rom_entries(name: str, starting_id: int, cannon: Coordinates, targets: list[
 
     slices = {}
     cur_z = 0
-    for i, t in enumerate(targets, start=starting_id):
+    for i, t in enumerate(encoded_targets, start=starting_id):
         if (i % 8 == 0):
             slices[f"repeater{i//8}"] = copy_region(repeater, repeater.x, repeater.y, cur_z)
             cur_z += 1
 
-        slice = rom_slice(i, (cannon.x, cannon.y, cannon.z), (t.x, t.y, t.z))
+        slice = bits_to_region(t.x_bits, t.z_bits)
         slice = copy_region(slice, slice.x, slice.y, cur_z)
 
-        if t.name == "":
-            t.name = str(i)
-        # How many regions are already present in slices with the name t.name
+        target_name = t.name or str(i)
+
+        # How many regions are already present in slices with the name target_name
         existing_same_name = sum(1 for k in slices.keys() if k.startswith(t.name))
         if existing_same_name == 0:
-            slices[t.name] = slice
+            slices[target_name] = slice
         else:
-            slices[f"{t.name}_{existing_same_name}"] = slice
+            slices[f"{target_name}_{existing_same_name}"] = slice
 
         cur_z += 1
 

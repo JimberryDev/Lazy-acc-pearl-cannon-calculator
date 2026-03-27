@@ -41,3 +41,9 @@ class SchematicTarget:
     x: int
     y: int
     z: int
+
+@dataclass
+class EncodedTarget:
+    name: str
+    x_bits: str
+    z_bits: str
