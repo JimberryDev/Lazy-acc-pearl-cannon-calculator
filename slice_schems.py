@@ -17,7 +17,7 @@ DECODER_SLICE = SRC_DIR / "Decoder slice.litematic"
 REPEATER = SRC_DIR / "Repeater.litematic"
 
 AUTHOR = "JimberryDev"
-MAX_SCHEMATICS = 64
+MAX_SCHEMATICS = 63
 
 
 def coords_to_data_region(cannon, target) -> Region:
@@ -154,8 +154,8 @@ def rom_entries(name: str, starting_id: int, encoded_targets: list[EncodedTarget
         Schematic: A schematic with the decoder and encoder for your targets
     """
 
-    if not (0 < starting_id < MAX_SCHEMATICS):
-        raise ValueError(f"starting_id must lie exclusively between 0 and {MAX_SCHEMATICS}")
+    if not (0 < starting_id <= MAX_SCHEMATICS):
+        raise ValueError(f"starting_id must lie exclusively between 0 and {MAX_SCHEMATICS+1}")
 
     repeater_s = Schematic.load(REPEATER)
     repeater = next(iter(repeater_s.regions.values()))

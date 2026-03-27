@@ -220,11 +220,17 @@ End users should download from:
 - JimberryDev
 - [Follow me on Youtube](https://www.youtube.com/@JimberryDev)
 
-### Used designs made by other people and link to where I got them
+### Used designs made by other people and link to where I got them from
 - *Timing based binary decoder* by **dzreams** from the [Storage Tech archive](https://discord.com/channels/748542142347083868/749136933191549028/997241072164016149) on Discord
 - *Hopperspeed Hex to Binary Converter* by **Andrews54757** from the [Storage Tech archive](https://discord.com/channels/748542142347083868/749136933191549028/939047254935896084) on Discord
 - *4gt Nimply gate* by **b1nary** from the [Computational Minecraft archive](https://discord.com/channels/959155788092424253/959157573049786458/1016390683478720634) on Discord
-- ** by **** from the [Storage Tech archive]() on Discord
+- *Binary Counter* by **Crain** from the [Computational Minecraft archive](https://discord.com/channels/959155788092424253/959157573049786458/1016384723578273832) on Discord
+- *50 tnt compressor* originally by **@intricate, @enbyd (she | they), @Emir, @DatNerd, @Savva, @Rozbiynik** from a customizable lazy stab grid cannon on the [TNT Archive](https://discord.com/channels/809607812312858684/1218316302784008233/1218316302784008233)
+- *Pearl aligner for 1.21.2+* by **[GaRLic BrEd1](https://www.youtube.com/@GaRLicBrEd1)** from the [TNT Archive](https://discord.com/channels/809607812312858684/1342918454465794141/1342918454465794141) on Discord
+
+### Inspiration
+
+When making this, I took severe inspiration in the *360 Lazy Accel Ender Pearl Cannon* from **[WhiteMC](https://www.youtube.com/@WhiteMc-ss7vl)** on [his youtube channel](https://youtu.be/y9iA3AAPDNs). I ended up remaking most of it, but I would not have been able to do it without first learning how he did his version. Thanks for that :)
 
 ---
 
