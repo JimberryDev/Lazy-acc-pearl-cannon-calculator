@@ -122,10 +122,19 @@ def copy_region(region: Region, new_x, new_y, new_z) -> Region:
 
     return new_region
 
+def rom_slice_from_bits(id: int, b_x : str, b_z: str):
+    """Returns a region for a schematic that contains the slice decoding the id and the slice encoding the tnts.
 
-def rom_slice(id: int, cannon, target) -> Region:
+    Args:
+        id (int): the id to be decoded
+        b_x (str): A string with the binary encoding the tnt amounts on the X axis
+        b_z (str): A string with the binary encoding the tnt amounts on the Z axis
+
+    Returns:
+        Region: The region with the blocks to decode the id and encode the tnt.
+    """
     decoder = make_decoder_slice_region(id)
-    data = coords_to_data_region(cannon, target)
+    data = bits_to_region(b_x, b_z)
 
     data = copy_region(
         data,
@@ -136,6 +145,22 @@ def rom_slice(id: int, cannon, target) -> Region:
 
     slice = merge_regions([data, decoder])
     return slice
+
+
+def rom_slice(id: int, cannon: tuple[int, int, int], target: tuple[int, int, int]) -> Region:
+    """Returns a region for a schematic that contains the slice decoding the id and the slice encoding the tnts.
+
+    Args:
+        id (int): the id to be decoded
+        cannon (tuple[int, int, int]): A tuple with the coordinates xyz of the cannon
+        target (tuple[int, int, int]): A tuple with the coordinates xyz of the target
+
+    Returns:
+        Region: The region with the blocks to decode the id and encode the tnt.
+    """
+
+    b_x, b_z = target_to_binary(cannon, target)
+    return rom_slice_from_bits(id, b_x, b_z)
 
 
 def rom_entries(name: str, starting_id: int, encoded_targets: list[EncodedTarget]) -> Schematic:
@@ -167,6 +192,7 @@ def rom_entries(name: str, starting_id: int, encoded_targets: list[EncodedTarget
             slices[f"repeater{i//8}"] = copy_region(repeater, repeater.x, repeater.y, cur_z)
             cur_z += 1
 
+        print("It def got here")
         slice = bits_to_region(t.x_bits, t.z_bits)
         slice = copy_region(slice, slice.x, slice.y, cur_z)
 
@@ -261,7 +287,7 @@ def merge_regions(regions, merged_x=None, merged_y=None, merged_z=None):
 
 if __name__ == "__main__":
     if len(sys.argv) == 8:
-        canon_x, canon_y, canon_z, target_x, target_y, target_z = map(float, sys.argv[1:7])
+        canon_x, canon_y, canon_z, target_x, target_y, target_z = map(int, sys.argv[1:7])
         name = sys.argv[7]
 
         rom_slice(1, (canon_x, canon_y, canon_z), (target_x, target_y, target_z))

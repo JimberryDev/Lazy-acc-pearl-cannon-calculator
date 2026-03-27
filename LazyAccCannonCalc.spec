@@ -2,7 +2,7 @@
 
 
 a = Analysis(
-    ['gui.py'],
+    ['app\\gui.py'],
     pathex=[],
     binaries=[],
     datas=[('src', 'src'), ('app.ico', '.')],
