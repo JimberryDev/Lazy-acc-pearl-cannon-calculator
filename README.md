@@ -6,6 +6,20 @@ It comes with a small desktop tool to generate `.litematic` schematics so you ca
 If you click on the "Overworld coords" checkbox, it will asume the coordinates you input are on the overworld side, and will divide by 8 the xz coordinates to get the nether respective coordinates before calculating.
 
 ---
+## Screenshots
+
+![Icon](app.ico)
+![Gui](/img/gui.png)
+
+---
+
+## Tutorial
+
+Watch how to use the cannon and tool here:
+
+[This link will be updated when I upload one in my channel](https://www.youtube.com/@JimberryDev)
+
+---
 
 ## Features
 
@@ -120,7 +134,7 @@ You can delete this file without repercussions, but it won't remember the cannon
 
 ---
 
-## 📁 Project Structure
+## Project Structure
 
 ```text
 [project root]
@@ -201,10 +215,16 @@ End users should download from:
 
 ---
 
-## Author
-
+## Credits
+### Author
 - JimberryDev
 - [Follow me on Youtube](https://www.youtube.com/@JimberryDev)
+
+### Used designs made by other people and link to where I got them
+- *Timing based binary decoder* by **dzreams** from the [Storage Tech archive](https://discord.com/channels/748542142347083868/749136933191549028/997241072164016149) on Discord
+- *Hopperspeed Hex to Binary Converter* by **Andrews54757** from the [Storage Tech archive](https://discord.com/channels/748542142347083868/749136933191549028/939047254935896084) on Discord
+- *4gt Nimply gate* by **b1nary** from the [Computational Minecraft archive](https://discord.com/channels/959155788092424253/959157573049786458/1016390683478720634) on Discord
+- ** by **** from the [Storage Tech archive]() on Discord
 
 ---
 
