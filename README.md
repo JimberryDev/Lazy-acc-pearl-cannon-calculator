@@ -25,7 +25,7 @@ If you click on the "Overworld coords" checkbox, it will asume the coordinates y
 
 Download the latest release from:
 
-[Releases](https://github.com/JimberryDev/Lazy-acc-pearl-cannon-calculator/releases)
+- [Releases](https://github.com/JimberryDev/Lazy-acc-pearl-cannon-calculator/releases)
 
 Then Run `LazyAccCannon.exe`
 
@@ -167,11 +167,11 @@ Output:
 dist/LazyAccCannon.exe
 ```
 
-Delete `build` if you want to
+Delete `build` if you want to.
 
 ---
 
-## 🖼️ Icons
+## Icons
 
 - `.exe` icon is set via `--icon app.ico`
 - Window icon is set in code using `root.iconbitmap(...)`
@@ -179,45 +179,34 @@ Delete `build` if you want to
 
 ---
 
-## ⚠️ Limitations
+## Limitations
 
-- Max schematics: `64`
+- Max schematics: `63`
 - Max TNT per axis: `3199`
-- Assumes [CANNON DESIGN DETAILS]
-- Assumes [COORDINATE SYSTEM DETAILS]
+- Precision: about 15 blocks from your target max.
 
 ---
 
-## 🧩 Known Issues
+## Known Issues
 
-- Windows icon cache may delay icon updates
-- [OTHER ISSUE]
-
----
-
-## 🚧 TODO
-
-- Friendlier error messages
-- Save/load target presets
-- [IDEA]
-- [IDEA]
+- No known issue yet
 
 ---
 
-## 📦 Releases
+## Releases
 
 End users should download from:
 
-👉 [Releases](<REPLACE_WITH_RELEASES_LINK>)
+- [Releases](https://github.com/JimberryDev/Lazy-acc-pearl-cannon-calculator/releases)
 
 ---
 
-## 👤 Author
+## Author
 
-- [YOUR NAME / HANDLE]
+- JimberryDev
+- [Follow me on Youtube](https://www.youtube.com/@JimberryDev)
 
 ---
 
-## 📜 License
-
-[LICENSE HERE]
+## License
+This project is licensed under the terms described in the [`LICENSE`](LICENSE) file.
