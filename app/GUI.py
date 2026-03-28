@@ -309,7 +309,7 @@ def collect_targets(target_rows: list[TargetRow]) -> list[SchematicTarget]:
         x, y, z = format_coordinates(target_row.coordinate_entries, allow_placeholder=True)
 
         # apply overworld conversion if needed
-        if getattr(target_row, "overworld_var", None) and target_row.overworld_var.get():  # type: ignore
+        if getattr(target_row.frame, "overworld_var", None) and target_row.frame.overworld_var.get():  # type: ignore
             x = x // 8
             z = z // 8
 

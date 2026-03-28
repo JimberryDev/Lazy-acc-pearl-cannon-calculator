@@ -14,8 +14,7 @@ DIRECTIONS = {
     "south":   {"name": "south", "vector":      np.array([0.2577611051239664, 0, 0.8405252517166506]), "bit": 0},
     "west":    {"name": "west", "vector":       np.array([-0.7990852942457304, 0, -0.3995426547435254]), "bit": 1},
     "east":    {"name": "east", "vector":       np.array([0.8022091152196946, 0, -0.39323978471691357]), "bit": 0},
-    # "initial": {"name": "initial", "vector":    np.array([-0.2651525076935224, -0.45633449169280826,-0.21949711207872816])},
-    "initial": {"name": "initial", "vector":    np.array([0, 0, 0])},
+    "initial": {"name": "initial", "vector":    np.array([-0.2651525076935224, -0.45633449169280826,-0.21949711207872816])},
 }
 
 

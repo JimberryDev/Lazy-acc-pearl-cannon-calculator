@@ -6,7 +6,7 @@ from cannon_calc import target_to_binary
 from data_classes import EncodedTarget
 
 
-BASE_DIR = Path(__file__).resolve().parent
+BASE_DIR = Path(__file__).resolve().parent if getattr(sys, "frozen", False) else Path(__file__).resolve().parent.parent
 SRC_DIR = BASE_DIR / "src"
 
 APP_DIR = Path(sys.executable).resolve().parent if getattr(sys, "frozen", False) else Path(__file__).resolve().parent
@@ -192,8 +192,7 @@ def rom_entries(name: str, starting_id: int, encoded_targets: list[EncodedTarget
             slices[f"repeater{i//8}"] = copy_region(repeater, repeater.x, repeater.y, cur_z)
             cur_z += 1
 
-        print("It def got here")
-        slice = bits_to_region(t.x_bits, t.z_bits)
+        slice = rom_slice_from_bits(i, t.x_bits, t.z_bits)
         slice = copy_region(slice, slice.x, slice.y, cur_z)
 
         target_name = t.name or str(i)

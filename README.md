@@ -179,13 +179,13 @@ pip install pyinstaller
 Create spec:
 
 ```bash
-pyi-makespec --onefile --windowed --name LazyAccCannon gui.py --add-data "src;src" --add-data "app.ico;." --icon app.ico
+pyi-makespec --onefile --windowed --name LazyAccCannonCalc gui.py --add-data "src;src" --add-data "app.ico;." --icon app.ico
 ```
 
 Build:
 
 ```bash
-pyinstaller LazyAccCannon.spec
+pyinstaller LazyAccCannonCalc.spec
 ```
 
 Output:
