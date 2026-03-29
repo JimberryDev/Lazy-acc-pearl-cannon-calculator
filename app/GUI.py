@@ -5,7 +5,7 @@ import tkinter as tk
 from tkinter import filedialog
 from collections.abc import Callable
 from dataclasses import asdict
-from slice_schems import MAX_SCHEMATICS, rom_entries
+from slice_schems import MAX_SCHEMATIC, rom_entries
 from data_classes import *
 from cannon_calc import target_to_binary
 
@@ -32,7 +32,6 @@ PLACEHOLDER_COLOR = "gray"
 NORMAL_TEXT_COLOR = "black"
 
 WINDOW_TITLE = "Lazy Acceleration Calculator By JimberryDev"
-
 
 
 def get_app_dir() -> Path:
@@ -63,7 +62,7 @@ def only_valid_id_int(proposed_value: str) -> bool:
     - an empty string, so the user can clear the field while editing
     - digits
     """
-    return proposed_value == "" or (proposed_value.isdigit() and int(proposed_value) < MAX_SCHEMATICS)
+    return proposed_value == "" or (proposed_value.isdigit() and int(proposed_value) < MAX_SCHEMATIC)
 
 
 def get_int(entry: tk.Entry, default: int = 0, *, allow_placeholder: bool = False) -> int:
@@ -330,27 +329,46 @@ def make_schematics(
     targets: list[SchematicTarget],
     existing_targets_count: int,
     output_path: str,
-) -> list[tuple[int, str]]:
-    """Create schematics and return a list of (row_index, reason) for failures."""
+) -> list[TargetMessage]:
+    """Create schematics and return per-target messages."""
     name = Path(output_path).stem
 
     encoded_targets: list[EncodedTarget] = []
-    failures: list[tuple[int, str]] = []
+    messages: list[TargetMessage] = []
+    next_id = existing_targets_count + 1
 
     for idx, target in enumerate(targets):
         try:
-            encoded_target = EncodedTarget(
-                target.name,
-                *target_to_binary(
-                    (litematica_origin.x, litematica_origin.y, litematica_origin.z),
-                    (target.x, target.y, target.z),
-                ),
-            )
-            encoded_targets.append(encoded_target)
-        except Exception as error:
-            failures.append((idx, str(error)))
+            if next_id > MAX_SCHEMATIC:
+                raise ValueError("Memory overflow. Too little space")
 
-    # Only build/save if there is at least one valid target.
+            x_bits, z_bits = target_to_binary(
+                (litematica_origin.x, litematica_origin.y, litematica_origin.z),
+                (target.x, target.y, target.z),
+            )
+
+            encoded_targets.append(EncodedTarget(target.name, x_bits, z_bits))
+
+            messages.append(
+                TargetMessage(
+                    index=idx,
+                    name=target.name,
+                    ok=True,
+                    assigned_id=next_id,
+                )
+            )
+            next_id += 1
+
+        except Exception as error:
+            messages.append(
+                TargetMessage(
+                    index=idx,
+                    name=target.name,
+                    ok=False,
+                    reason=str(error),
+                )
+            )
+
     if encoded_targets:
         schem = rom_entries(
             name=name,
@@ -359,7 +377,7 @@ def make_schematics(
         )
         schem.save(output_path)
 
-    return failures
+    return messages
 
 
 def gather_gui_inputs(
@@ -383,27 +401,23 @@ def reset_target_row_styles(target_rows: list[TargetRow]) -> None:
 
 def mark_failed_target_rows(
     target_rows: list[TargetRow],
-    failures: list[tuple[int, str]],
+    messages: list[TargetMessage],
 ) -> None:
-    """Highlight target rows that could not be encoded."""
-    for index, _reason in failures:
-        if 0 <= index < len(target_rows):
-            target_rows[index].name_entry.config(bg="#ffcccc")
+    """Highlight target rows that failed."""
+    for msg in messages:
+        if not msg.ok and 0 <= msg.index < len(target_rows):
+            target_rows[msg.index].name_entry.config(bg="#ffcccc")
 
 
-def build_output_lines(
-    targets: list[SchematicTarget],
-    failures: list[tuple[int, str]],
-) -> list[str]:
+def build_output_lines(messages: list[TargetMessage]) -> list[str]:
     """Build the user-facing summary shown in the output label."""
-    failure_map = {index: reason for index, reason in failures}
-
     lines: list[str] = []
-    for index, target in enumerate(targets):
-        if index in failure_map:
-            lines.append(f"{target.name}: NOT REACHABLE ({failure_map[index]})")
+
+    for msg in messages:
+        if msg.ok:
+            lines.append(f"{msg.name}: OK (ID {msg.assigned_id})")
         else:
-            lines.append(f"{target.name}: OK")
+            lines.append(f"{msg.name}: NOT REACHABLE ({msg.reason})")
 
     return lines
 
@@ -550,7 +564,7 @@ def main() -> None:
             target_rows,
         )
 
-        failures = make_schematics(
+        messages = make_schematics(
             litematica_origin=origin,
             targets=targets,
             existing_targets_count=current_starting_id,
@@ -558,12 +572,14 @@ def main() -> None:
         )
 
         reset_target_row_styles(target_rows)
-        mark_failed_target_rows(target_rows, failures)
+        mark_failed_target_rows(target_rows, messages)
 
-        lines = build_output_lines(targets, failures)
+        lines = build_output_lines(messages)
         output_label.config(text="\n".join(lines))
+        resize_window_to_content()
 
-        saved_state = update_saved_state(origin, current_starting_id, len(target_rows))
+        successful_count = sum(1 for m in messages if m.ok)
+        saved_state = update_saved_state(origin, current_starting_id, successful_count)
         set_entry_text(starting_id, str(saved_state.starting_id))
 
     make_targets_header_row(header_frame, add_target_row)

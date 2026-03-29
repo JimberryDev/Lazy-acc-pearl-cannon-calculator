@@ -47,3 +47,11 @@ class EncodedTarget:
     name: str
     x_bits: str
     z_bits: str
+
+@dataclass
+class TargetMessage:
+    index: int
+    name: str
+    ok: bool
+    reason: str | None = None
+    assigned_id: int | None = None

@@ -17,7 +17,8 @@ DECODER_SLICE = SRC_DIR / "Decoder slice.litematic"
 REPEATER = SRC_DIR / "Repeater.litematic"
 
 AUTHOR = "JimberryDev"
-MAX_SCHEMATICS = 63
+# This is the latest id the memory can store. The actual amount of memory slots is different.
+MAX_SCHEMATIC = 63
 
 
 def coords_to_data_region(cannon, target) -> Region:
@@ -50,16 +51,14 @@ def bits_to_region(b_x: str, b_z: str) -> Region:
     schem = Schematic.load(DATA_SLICE)
 
     # Assume first region
-    region = next(iter(schem.regions.values()))
+    region = normalize_region(next(iter(schem.regions.values())))
 
-    print(f"b_z is {b_z}")
-    print(f"b_x is {b_x}")
     for i, c in enumerate(b_z):
         if c == '1':
-            region[i, -1, 0] = BlockState("minecraft:observer", facing="down")
+            region[i, -2, 0] = BlockState("minecraft:observer", facing="down")
     for i, c in enumerate(b_x):
         if c == '1':
-            region[i, -3, 0] = BlockState("minecraft:observer", facing="up")
+            region[i, -4, 0] = BlockState("minecraft:observer", facing="up")
 
     return region
 
@@ -85,17 +84,20 @@ def save_data_schem(name, cannon, target) -> Schematic:
 
 
 def make_decoder_slice_region(n: int) -> Region:
+    if not (0 < n <= MAX_SCHEMATIC):
+        raise ValueError(f"The index must lie between 0 and {MAX_SCHEMATIC+1}")
+
     b = format(n, "06b")
 
     # Load schematic
     schem = Schematic.load(DECODER_SLICE)
 
     # Assume first region
-    region = next(iter(schem.regions.values()))
+    region: Region = normalize_region(next(iter(schem.regions.values())))
 
     for i, c in enumerate(b):
-        if c == '1':
-            region[i, 3, 0] = BlockState("minecraft:white_concrete")
+        if c == '0':
+            region[i, 3, 0] = BlockState("minecraft:observer", facing="down")
 
     return region
 
@@ -122,7 +124,8 @@ def copy_region(region: Region, new_x, new_y, new_z) -> Region:
 
     return new_region
 
-def rom_slice_from_bits(id: int, b_x : str, b_z: str):
+
+def rom_slice_from_bits(id: int, b_x: str, b_z: str):
     """Returns a region for a schematic that contains the slice decoding the id and the slice encoding the tnts.
 
     Args:
@@ -138,9 +141,8 @@ def rom_slice_from_bits(id: int, b_x : str, b_z: str):
 
     data = copy_region(
         data,
-        decoder.x + decoder.width,
-        data.y,
-        data.z
+        decoder.width,
+        0,0
     )
 
     slice = merge_regions([data, decoder])
@@ -179,23 +181,24 @@ def rom_entries(name: str, starting_id: int, encoded_targets: list[EncodedTarget
         Schematic: A schematic with the decoder and encoder for your targets
     """
 
-    if not (0 < starting_id <= MAX_SCHEMATICS):
-        raise ValueError(f"starting_id must lie exclusively between 0 and {MAX_SCHEMATICS+1}")
-
     repeater_s = Schematic.load(REPEATER)
-    repeater = next(iter(repeater_s.regions.values()))
+    repeater = normalize_region(next(iter(repeater_s.regions.values())))
 
     slices = {}
     cur_z = 0
-    for i, t in enumerate(encoded_targets, start=starting_id):
-        if (i % 8 == 0):
-            slices[f"repeater{i//8}"] = copy_region(repeater, repeater.x, repeater.y, cur_z)
+    id = starting_id
+    for t in encoded_targets:
+        if (id % 8 == 0):
+            slices[f"repeater{id//8}"] = copy_region(repeater, repeater.x, repeater.y, cur_z)
             cur_z += 1
 
-        slice = rom_slice_from_bits(i, t.x_bits, t.z_bits)
+        if (id % 16 == 0):
+            id += 1 # Skip multiples of 16 because of an interface limitation
+
+        slice = rom_slice_from_bits(id, t.x_bits, t.z_bits)
         slice = copy_region(slice, slice.x, slice.y, cur_z)
 
-        target_name = t.name or str(i)
+        target_name = t.name or str(id)
 
         # How many regions are already present in slices with the name target_name
         existing_same_name = sum(1 for k in slices.keys() if k.startswith(t.name))
@@ -205,6 +208,7 @@ def rom_entries(name: str, starting_id: int, encoded_targets: list[EncodedTarget
             slices[f"{target_name}_{existing_same_name}"] = slice
 
         cur_z += 1
+        id += 1
 
     schem = Schematic(name=name, author=AUTHOR, regions=slices)
 
@@ -282,6 +286,43 @@ def merge_regions(regions, merged_x=None, merged_y=None, merged_z=None):
         merged.fluid_ticks.extend(region.fluid_ticks)
 
     return merged
+
+
+def normalize_region(region: Region) -> Region:
+    """
+    Return a copy of the region where local coordinates start at (0,0,0)
+    and dimensions are positive.
+
+    This removes negative coordinate ranges and makes indexing consistent.
+    """
+
+    # Determine local coordinate bounds
+    min_x, max_x = region.min_x(), region.max_x()   # type: ignore
+    min_y, max_y = region.min_y(), region.max_y()   # type: ignore
+    min_z, max_z = region.min_z(), region.max_z()   # type: ignore
+
+    width  = max_x - min_x + 1
+    height = max_y - min_y + 1
+    length = max_z - min_z + 1
+
+    # Create new region starting at (0,0,0)
+    new_region = Region(0, 0, 0, width, height, length)
+
+    # Copy blocks
+    for x, y, z in region.block_positions():    # type: ignore
+        new_x = x - min_x
+        new_y = y - min_y
+        new_z = z - min_z
+
+        new_region[new_x, new_y, new_z] = region[x, y, z]
+
+    # Copy metadata
+    new_region.entities.extend(region.entities)
+    new_region.tile_entities.extend(region.tile_entities)
+    new_region.block_ticks.extend(region.block_ticks)
+    new_region.fluid_ticks.extend(region.fluid_ticks)
+
+    return new_region
 
 
 if __name__ == "__main__":

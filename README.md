@@ -176,16 +176,27 @@ pip install -r requirements.txt
 pip install pyinstaller
 ```
 
-Create spec:
+Create spec for the pretty version:
 
 ```bash
 pyi-makespec --onefile --windowed --name LazyAccCannonCalc gui.py --add-data "src;src" --add-data "app.ico;." --icon app.ico
 ```
 
+Or the one for the cheap one:
+```bash
+pyi-makespec --onefile --windowed --name LazyAccCannonCalcCheap gui.py --add-data "src_cheap;src" --add-data "app.ico;." --icon app.ico
+```
+
+
 Build:
 
 ```bash
 pyinstaller LazyAccCannonCalc.spec
+```
+or for cheap:
+
+```bash
+pyinstaller LazyAccCannonCalcCheap.spec
 ```
 
 Output:
