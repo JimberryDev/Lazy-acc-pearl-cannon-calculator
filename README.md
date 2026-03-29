@@ -16,6 +16,9 @@ If you click on the "Overworld coords" checkbox, it will assume the coordinates 
 
 ![Icon](app.ico)
 ![Gui](img/gui.png)
+![Nether with rom](img/nether_side_1.png)
+![Nether2 without rom](img/nether_side_2.png)
+![Overworld](img/overworld_side.png.png)
 
 ---
 

@@ -6,7 +6,7 @@ Here it is:
 ## Features
 - Expandible memory (ROM) with up to 60 locations  (but it would be easy to make it bigger if you really need it to be)
 - Block precision with an error of max ~15 blocks if you build right on top of the nether roof.
-- Max range of 
+- Max range of ~100 000 blocks if you build on the nether roof. Which is 800 000 blocks on the overworld
 - It comes with a calculator that generates schematics to input the locations to the ROM
 - The calculator comes with a nice GUI, or you can download the scripts directly from Github
     - I tried to make the calculating part of the script as readable and clean so you can learn from it if you want, and maybe use it for your own cannon.
