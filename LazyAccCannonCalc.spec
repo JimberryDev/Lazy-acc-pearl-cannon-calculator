@@ -29,7 +29,7 @@ else:
 
 
 a = Analysis(
-    ['app/gui.py'],
+    ['app/GUI.py'],
     pathex=[],
     binaries=[],
     datas=[(src, 'src'), (icon, 'img'), (icon_png, 'img')],
