@@ -3,7 +3,8 @@ import sys
 
 
 RELATIVE_LAUNCH_POINT = np.array([18.0, 17.75, 0.865])
-DRAG = 0.99  # Drag coefficient per tick.
+# Drag coefficient per tick.
+DRAG = np.float32(0.99) # This comes to be 0.9900000095367432 
 d = DRAG
 GRAVITY = 0.03  # Gravity per tick.
 g = GRAVITY
