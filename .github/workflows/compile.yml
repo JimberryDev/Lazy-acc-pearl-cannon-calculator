@@ -32,12 +32,12 @@ jobs:
       # --- Build pretty ---
       - name: Build pretty
         run: |
-          pyinstaller --noconfirm LazyAccCannon.spec
+          pyinstaller --noconfirm LazyAccCannonCalc.spec
 
       # --- Build cheap variant (passes arg to spec) ---
       - name: Build cheap
         run: |
-          pyinstaller --noconfirm LazyAccCannon.spec -- --cheap
+          pyinstaller --noconfirm LazyAccCannonCalc.spec -- --cheap
 
       # --- Debug: list outputs ---
       - name: List dist contents
