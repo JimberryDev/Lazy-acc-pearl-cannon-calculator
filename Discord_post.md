@@ -44,7 +44,9 @@ Here it is:
 1. Before building the schematic, you want to pull the lever on a lamp with a sign. This will disconnect it as to not launch by accident
 1. Place the schematic into minecraft in the next available spaces in the ROM and build
 1. Press the reset button to clear the counters and unpull the lever from before.
-1. On the overworld side, add the target a lectern. If it is a target between 1 and 15, use the right-most lectern, between 17 and 31, the second right-most and so on.
+1. On the overworld side, add the target to a lectern. 
+    - If it is a target between 1 and 15, use the right-most lectern, between 17 and 31, the second right-most and so on.
+    - The id of the page should match the id that the app tells you.
     - The id of each page on a lectern is its page number + 16 * (the amount of lecterns to the right of it)
 
 ### Traveling
