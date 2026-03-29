@@ -1,11 +1,38 @@
 # -*- mode: python ; coding: utf-8 -*-
 
+import sys
+import argparse
+
+parser = argparse.ArgumentParser()
+parser.add_argument("--cheap", action="store_true")
+options = parser.parse_args()
+
+
+icon_stem = "img/app"
+icon_png = icon_stem + ".png"
+
+if sys.platform == "win32":
+    icon = icon_stem + ".ico"
+elif sys.platform == "linux":
+    icon = icon_png
+elif sys.platform == "darwin":
+    icon = icon_stem + ".icns"
+else:
+    raise RuntimeError(f"Unsupported platform: {sys.platform}")
+
+if options.cheap:
+    name = 'LazyAccCannonCalcCheap'
+    src = 'src_cheap' 
+else:
+    name = 'LazyAccCannonCalc'
+    src = 'src' 
+
 
 a = Analysis(
-    ['app\\gui.py'],
+    ['app/gui.py'],
     pathex=[],
     binaries=[],
-    datas=[('src', 'src'), ('app.ico', '.')],
+    datas=[(src, 'src'), (icon, 'img'), (icon_png, 'img')],
     hiddenimports=[],
     hookspath=[],
     hooksconfig={},
@@ -22,7 +49,7 @@ exe = EXE(
     a.binaries,
     a.datas,
     [],
-    name='LazyAccCannonCalc',
+    name=name,
     debug=False,
     bootloader_ignore_signals=False,
     strip=False,
@@ -35,5 +62,5 @@ exe = EXE(
     target_arch=None,
     codesign_identity=None,
     entitlements_file=None,
-    icon=['app.ico'],
+    icon=icon,
 )

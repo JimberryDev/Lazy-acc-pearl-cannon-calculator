@@ -9,7 +9,6 @@ from slice_schems import MAX_SCHEMATIC, rom_entries
 from data_classes import *
 from cannon_calc import target_to_binary
 
-
 # ---- UI constants (layout & sizing) ----
 ENTRY_MIN_WIDTH = 5
 ID_MIN_WIDTH = 5
@@ -41,7 +40,9 @@ def get_app_dir() -> Path:
 
 
 SETTINGS_FILE = get_app_dir() / "lazy_acc_cannon_gui_state.json"
-ICON_FILE = Path(__file__).resolve().parent / "app.ico"
+RESOURCE_DIR = Path(__file__).resolve().parent / "img"
+WINDOWS_ICON_FILE = RESOURCE_DIR / "app.ico"
+APP_ICON_PNG = RESOURCE_DIR / "app.png"
 
 
 def only_int(proposed_value: str) -> bool:
@@ -439,12 +440,25 @@ def update_saved_state(
     return state
 
 
+def apply_app_icon(root: tk.Tk) -> None:
+    """Apply the best available window icon for the current platform."""
+    if sys.platform == "win32" and WINDOWS_ICON_FILE.exists():
+        root.iconbitmap(str(WINDOWS_ICON_FILE))
+        return
+
+    if sys.platform in ("linux", "darwin") and APP_ICON_PNG.exists():
+        try:
+            image = tk.PhotoImage(file=str(APP_ICON_PNG))
+            root.iconphoto(True, image)
+            root._icon_image = image  # type: ignore[attr-defined]
+        except tk.TclError:
+            pass
+
 def main() -> None:
     """Create and run the GUI application."""
     root = tk.Tk()
     root.title(WINDOW_TITLE)
-    if ICON_FILE.exists():
-        root.iconbitmap(str(ICON_FILE))
+    apply_app_icon(root)
 
     # Scale entire UI (fonts + widgets)
     root.tk.call("tk", "scaling", UI_SCALE)

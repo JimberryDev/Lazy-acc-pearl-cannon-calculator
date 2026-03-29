@@ -174,20 +174,8 @@ Create venv and install:
 
 ```bash
 py -m venv .venv
-.venv\\Scripts\\activate
+.venv\Scripts\activate
 pip install -r requirements.txt
-pip install pyinstaller
-```
-
-Create spec for the pretty version:
-
-```bash
-pyi-makespec --onefile --windowed --name LazyAccCannonCalc gui.py --add-data "src;src" --add-data "app.ico;." --icon app.ico
-```
-
-Or the one for the cheap one:
-```bash
-pyi-makespec --onefile --windowed --name LazyAccCannonCalcCheap gui.py --add-data "src_cheap;src" --add-data "app.ico;." --icon app.ico
 ```
 
 
@@ -196,19 +184,25 @@ Build:
 ```bash
 pyinstaller LazyAccCannonCalc.spec
 ```
-or for cheap:
+
+This will create the pretty version. If you want the cheap version use the option --cheap after -- (the "--" appears twice):
 
 ```bash
-pyinstaller LazyAccCannonCalcCheap.spec
+pyinstaller LazyAccCannonCalc.spec -- --cheap
 ```
 
-Output:
+In /dist, you'll find the output:
 
 ```text
-dist/LazyAccCannon.exe
+dist/LazyAccCannonCalc.exe
+```
+or
+```text
+dist/LazyAccCannonCheap.exe
 ```
 
-Delete `build` if you want to.
+
+Delete `/build` if you want to.
 
 ---
 

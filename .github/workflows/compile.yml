@@ -1,0 +1,60 @@
+name: Build LazyAccCannon
+
+on:
+  workflow_dispatch:
+  push:
+    tags:
+      - "v*"
+
+jobs:
+  build:
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        os: ['windows-latest', 'ubuntu-latest', 'macos-latest']
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.13'
+
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt
+          pip install pyinstaller
+
+      # --- Build pretty ---
+      - name: Build pretty
+        run: |
+          pyinstaller --noconfirm LazyAccCannon.spec
+
+      # --- Build cheap variant (passes arg to spec) ---
+      - name: Build cheap
+        run: |
+          pyinstaller --noconfirm LazyAccCannon.spec -- --cheap
+
+      # --- Debug: list outputs ---
+      - name: List dist contents
+        run: |
+          ls -R dist || dir dist
+
+      # --- Upload artifacts ---
+      - name: Upload pretty artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: LazyAccCannonCalc-${{ matrix.os }}_pretty
+          path: |
+            dist/LazyAccCannonCalc*
+
+      - name: Upload cheap artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: LazyAccCannonCalc-${{ matrix.os }}_cheap
+          path: |
+            dist/LazyAccCannonCalcCheap*
