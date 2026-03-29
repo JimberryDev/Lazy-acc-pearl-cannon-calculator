@@ -13,19 +13,26 @@ icon_png = icon_stem + ".png"
 
 if sys.platform == "win32":
     icon = icon_stem + ".ico"
+    platform_name = "win"
 elif sys.platform == "linux":
     icon = icon_png
+    platform_name = "linux"
 elif sys.platform == "darwin":
     icon = icon_stem + ".icns"
+    platform_name = "macos"
 else:
     raise RuntimeError(f"Unsupported platform: {sys.platform}")
 
 if options.cheap:
-    name = 'LazyAccCannonCalcCheap'
+    name = 'LazyAccCannonCalc'
     src = 'src_cheap' 
+    variant_name = 'pretty'
 else:
     name = 'LazyAccCannonCalc'
     src = 'src' 
+    variant_name = 'cheap'
+
+name = f"LazyAccCannonCalc_{platform_name}_{variant_name}"
 
 
 a = Analysis(

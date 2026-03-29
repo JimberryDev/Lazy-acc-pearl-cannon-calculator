@@ -49,17 +49,11 @@ jobs:
           ls -R dist
 
       # --- Upload artifacts ---
-      - name: Upload pretty artifact
+      - name: Upload artifacts
         uses: actions/upload-artifact@v6
         with:
-          name: LazyAccCannonCalc-${{ matrix.os }}-pretty
-          path: dist/LazyAccCannonCalc*
-
-      - name: Upload cheap artifact
-        uses: actions/upload-artifact@v6
-        with:
-          name: LazyAccCannonCalc-${{ matrix.os }}-cheap
-          path: dist/LazyAccCannonCalcCheap*
+          name: LazyAccCannonCalc-${{ matrix.os }}
+          path: dist/*
 
   release:
     if: startsWith(github.ref, 'refs/tags/v')
